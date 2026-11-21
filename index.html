@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Blood Donor Registration</title>
+
+<style>
+    body {
+    background-color: pink;
+    font-family: Arial;
+    }
+    h1 {
+    color: red;
+    }
+label {
+  display: block;
+  font-weight: bold;
+}
+.error {
+  color: red;
+}
+table, th, td {
+  border: 1px black;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 5px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Blood Donor Registration</h1>
+
+<form id="regForm" method="post" action="#">
+
+  <label for="fname">Full Name</label>
+  <input type="text" id="fname" name="fname" required minlength="3">
+  <span id="err-fname" class="error"></span>
+  <br>
+
+  <label for="sid">AIUB ID</label>
+  <input type="text" id="sid" name="sid" required pattern="[0-9]{2}-[0-9]{5}-[0-9]{1}">
+  <span id="err-sid" class="error"></span>
+  <br>
+
+  <label for="phone">Mobile</label>
+  <input type="text" id="phone" name="phone" required pattern="[0-9]{11}">
+  <span id="err-phone" class="error"></span>
+  <br>
+
+  <label for="age">Age</label>
+  <input type="number" id="age" name="age" required min="18" max="60">
+  <span id="err-age" class="error"></span>
+  <br>
+
+  <label for="bgroup">Blood Group</label>
+  <select id="bgroup" name="bgroup" required>
+    <option value="">Select blood group</option>
+    <option value="A+">A+</option>
+    <option value="A-">A-</option>
+    <option value="B+">B+</option>
+    <option value="B-">B-</option>
+    <option value="O+">O+</option>
+    <option value="O-">O-</option>
+    <option value="AB+">AB+</option>
+    <option value="AB-">AB-</option>
+  </select>
+  <span id="err-bgroup" class="error"></span>
+  <br>
+
+  <label>Donated before?</label>
+  <input type="radio" id="donated-yes" name="donated" value="Yes" required> Yes
+  <input type="radio" id="donated-no" name="donated" value="No" required> No
+  <span id="err-donated" class="error"></span>
+  <br>
+
+  <input type="checkbox" id="agree" name="agree" required>
+  <label for="agree" style="display:inline">I am healthy and willing to donate</label>
+  <span id="err-agree" class="error"></span>
+  <br>
+
+  <label for="pass">Password</label>
+  <input type="password" id="pass" name="pass" required minlength="6">
+  <span id="err-pass" class="error"></span>
+  <br>
+
+  <label for="pass2">Confirm Password</label>
+  <input type="password" id="pass2" name="pass2" required>
+  <span id="err-pass2" class="error"></span>
+  <br>
+
+  <button type="submit">Register Donor</button>
+
+</form>
+
+<p id="count">Total donors: 0</p>
+
+<table id="list">
+  <tr>
+    <th>Name</th>
+    <th>ID</th>
+    <th>Blood Group</th>
+    <th>Action</th>
+  </tr>
+</table>
+
+<script>
+var donors = [];
+
+function validateForm() {
+  var ok = true;
+
+  var fname = document.getElementById("fname").value.trim();
+  if (fname.length < 3) {
+    document.getElementById("err-fname").innerHTML = "Name must have at least 3 characters";
+    ok = false;
+  } else {
+    document.getElementById("err-fname").innerHTML = "";
+  }
+
+  var sid = document.getElementById("sid").value;
+  var idPattern = /^[0-9]{2}-[0-9]{5}-[0-9]{1}$/;
+  if (!idPattern.test(sid)) {
+    document.getElementById("err-sid").innerHTML = "ID must be in the format 22-12345-1";
+    ok = false;
+  } else {
+    document.getElementById("err-sid").innerHTML = "";
+  }
+
+  var phone = document.getElementById("phone").value;
+  var phonePattern = /^[0-9]{11}$/;
+  if (!phonePattern.test(phone)) {
+    document.getElementById("err-phone").innerHTML = "Mobile must be exactly 11 digits";
+    ok = false;
+  } else {
+    document.getElementById("err-phone").innerHTML = "";
+  }
+
+  var age = Number(document.getElementById("age").value);
+  if (document.getElementById("age").value === age < 18 || age > 60) {
+    document.getElementById("err-age").innerHTML = "Age must be between 18 and 60";
+    ok = false;
+  } else {
+    document.getElementById("err-age").innerHTML = "";
+  }
+
+  var bgroup = document.getElementById("bgroup").value;
+  if (bgroup === "") {
+    document.getElementById("err-bgroup").innerHTML = "Select a blood group";
+    ok = false;
+  } else {
+    document.getElementById("err-bgroup").innerHTML = "";
+  }
+
+  var donatedYes = document.getElementById("donated-yes").checked;
+  var donatedNo = document.getElementById("donated-no").checked;
+  if (!donatedYes && !donatedNo) {
+    document.getElementById("err-donated").innerHTML = "Choose Yes or No";
+    ok = false;
+  } else {
+    document.getElementById("err-donated").innerHTML = "";
+  }
+
+  var agree = document.getElementById("agree").checked;
+  if (!agree) {
+    document.getElementById("err-agree").innerHTML = "You must tick the box";
+    ok = false;
+  } else {
+    document.getElementById("err-agree").innerHTML = "";
+  }
+
+  var pass = document.getElementById("pass").value;
+  if (pass.length < 6) {
+    document.getElementById("err-pass").innerHTML = "Password must be at least 6 characters";
+    ok = false;
+  } else {
+    document.getElementById("err-pass").innerHTML = "";
+  }
+
+  var pass2 = document.getElementById("pass2").value;
+  if (pass2 === "" || pass2 !== pass) {
+    document.getElementById("err-pass2").innerHTML = "Passwords do not match";
+    ok = false;
+  } else {
+    document.getElementById("err-pass2").innerHTML = "";
+  }
+
+  if (ok) {
+    var donor = { name: fname, id: sid, group: bgroup };
+    donors.push(donor);
+    addRow(donor);
+    updateCount();
+    document.getElementById("regForm").reset();
+  }
+
+  return false;
+}
+
+function addRow(donor) {
+  var table = document.getElementById("list");
+  var row = table.insertRow();
+
+  var nameCell = row.insertCell();
+  nameCell.innerHTML = donor.name;
+
+  var idCell = row.insertCell();
+  idCell.innerHTML = donor.id;
+
+  var groupCell = row.insertCell();
+  groupCell.innerHTML = donor.group;
+
+  var actionCell = row.insertCell();
+  var btn = document.createElement("button");
+  btn.innerHTML = "Remove";
+  btn.onclick = function () {
+    var index = donors.indexOf(donor);
+    donors.splice(index, 1);
+    table.deleteRow(row.rowIndex);
+    updateCount();
+  };
+  actionCell.appendChild(btn);
+}
+
+function updateCount() {
+  document.getElementById("count").innerHTML = "Total donors: " + donors.length;
+}
+</script>
+
+</body>
+</html>
